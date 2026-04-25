@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>스키를 좋아하던 그녀 | 웹툰 뷰어</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0c;
+      --panel: #151311;
+      --text: #f7f2ea;
+      --muted: #b9b0a4;
+      --line: rgba(247, 242, 234, 0.14);
+      --accent: #ffcf70;
+      --accent-strong: #ff9f5a;
+      --reader-width: 720px;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.03)),
+        var(--bg);
+      letter-spacing: 0;
+    }
+
+    body.fit-wide {
+      --reader-width: min(100vw, 1152px);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 64px;
+      padding: 10px clamp(14px, 4vw, 28px);
+      background: rgba(11, 11, 12, 0.9);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(18px, 4vw, 24px);
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .meta span + span::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 3px;
+      margin: 0 10px 2px 0;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.65;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      font: inherit;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 207, 112, 0.55);
+      background: rgba(255, 207, 112, 0.12);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 20;
+      width: 100%;
+      height: 3px;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    .progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 0 18px rgba(255, 207, 112, 0.45);
+    }
+
+    main {
+      width: min(100%, var(--reader-width));
+      margin: 0 auto;
+      padding: clamp(14px, 3vw, 28px) 0 64px;
+    }
+
+    .cover {
+      min-height: min(38svh, 360px);
+      display: grid;
+      align-content: end;
+      padding: clamp(34px, 7vw, 72px) clamp(20px, 5vw, 54px);
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
+        #11100f;
+    }
+
+    .cover p {
+      max-width: 520px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: clamp(15px, 2.4vw, 18px);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .reader {
+      display: grid;
+      gap: 0;
+      background: #050505;
+    }
+
+    figure {
+      margin: 0;
+      position: relative;
+      background: #050505;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    figure::before {
+      content: attr(data-label);
+      position: absolute;
+      left: clamp(12px, 3vw, 20px);
+      top: clamp(12px, 3vw, 20px);
+      z-index: 1;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.88);
+      background: rgba(0, 0, 0, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    figure.is-active::before,
+    figure:hover::before {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 240px;
+      color: var(--muted);
+      background: #080808;
+    }
+
+    .rail {
+      position: fixed;
+      right: clamp(10px, 2.5vw, 28px);
+      top: 50%;
+      z-index: 9;
+      display: grid;
+      gap: 10px;
+      transform: translateY(-50%);
+    }
+
+    .rail a {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .rail a.is-active {
+      transform: scale(1.45);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .endcap {
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+      padding: 54px 20px 80px;
+      color: var(--muted);
+      text-align: center;
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+    }
+
+    .endcap strong {
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .endcap button {
+      width: auto;
+      min-width: 112px;
+      padding: 0 18px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .toolbar {
+        justify-content: space-between;
+      }
+
+      button {
+        width: 38px;
+        height: 38px;
+      }
+
+      .rail {
+        display: none;
+      }
+
+      main {
+        padding-top: 0;
+      }
+
+      .cover {
+        min-height: 220px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      html {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+  <header class="topbar">
+    <div class="title-block">
+      <h1>스키를 좋아하던 그녀</h1>
+      <div class="meta">
+        <span>Episode 01</span>
+        <span id="pageState">1 / 4</span>
+      </div>
+    </div>
+    <nav class="toolbar" aria-label="웹툰 이동">
+      <button type="button" id="toTop" aria-label="처음으로">↑</button>
+      <button type="button" id="prevPage" aria-label="이전 이미지">‹</button>
+      <button type="button" id="nextPage" aria-label="다음 이미지">›</button>
+      <button type="button" id="fitToggle" aria-label="폭 맞춤">↔</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="cover" aria-labelledby="episodeTitle">
+      <h2 id="episodeTitle">겨울 새벽, 리프트 불빛 아래 시작된 마음</h2>
+      <p>은행 창구에서 반듯하게 하루를 보내던 그녀가 눈 위에서 가장 자기다운 표정을 만나는 짧은 로맨스.</p>
+    </section>
+
+    <nav class="rail" aria-label="이미지 바로가기">
+      <a href="#page-1" aria-label="1번 이미지"></a>
+      <a href="#page-2" aria-label="2번 이미지"></a>
+      <a href="#page-3" aria-label="3번 이미지"></a>
+      <a href="#page-4" aria-label="4번 이미지"></a>
+    </nav>
+
+    <section class="reader" aria-label="웹툰 이미지">
+      <figure id="page-1" data-index="1" data-label="01 / 04">
+        <img src="images/ski-her-01.png" alt="스키를 좋아하던 그녀 1번 이미지" width="1152" height="2048" loading="eager" decoding="async">
+      </figure>
+      <figure id="page-2" data-index="2" data-label="02 / 04">
+        <img src="images/ski-her-02.png" alt="스키를 좋아하던 그녀 2번 이미지" width="1152" height="2048" loading="eager" decoding="async">
+      </figure>
+      <figure id="page-3" data-index="3" data-label="03 / 04">
+        <img src="images/ski-her-03.png" alt="스키를 좋아하던 그녀 3번 이미지" width="1152" height="2048" loading="eager" decoding="async">
+      </figure>
+      <figure id="page-4" data-index="4" data-label="04 / 04">
+        <img src="images/ski-her-04.png" alt="스키를 좋아하던 그녀 4번 이미지" width="1152" height="2048" loading="eager" decoding="async">
+      </figure>
+    </section>
+
+    <section class="endcap" aria-label="끝">
+      <strong>끝</strong>
+      <button type="button" id="again">처음으로</button>
+    </section>
+  </main>
+
+  <script>
+    const pages = Array.from(document.querySelectorAll("figure[data-index]"));
+    const dots = Array.from(document.querySelectorAll(".rail a"));
+    const pageState = document.querySelector("#pageState");
+    const progressBar = document.querySelector("#progressBar");
+    const topButton = document.querySelector("#toTop");
+    const prevButton = document.querySelector("#prevPage");
+    const nextButton = document.querySelector("#nextPage");
+    const fitButton = document.querySelector("#fitToggle");
+    const againButton = document.querySelector("#again");
+    let activeIndex = 0;
+
+    const scrollToPage = (index) => {
+      const safeIndex = Math.min(Math.max(index, 0), pages.length - 1);
+      pages[safeIndex].scrollIntoView({ block: "start" });
+    };
+
+    const setActive = (index) => {
+      activeIndex = index;
+      pages.forEach((page, pageIndex) => page.classList.toggle("is-active", pageIndex === index));
+      dots.forEach((dot, dotIndex) => dot.classList.toggle("is-active", dotIndex === index));
+      pageState.textContent = `${index + 1} / ${pages.length}`;
+    };
+
+    const updateProgress = () => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = maxScroll <= 0 ? 0 : Math.min(1, scrollTop / maxScroll);
+      progressBar.style.width = `${progress * 100}%`;
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (!visible) return;
+      setActive(Number(visible.target.dataset.index) - 1);
+    }, {
+      rootMargin: "-30% 0px -45% 0px",
+      threshold: [0.2, 0.45, 0.7]
+    });
+
+    pages.forEach((page) => observer.observe(page));
+    dots.forEach((dot, index) => dot.addEventListener("click", (event) => {
+      event.preventDefault();
+      scrollToPage(index);
+    }));
+
+    topButton.addEventListener("click", () => window.scrollTo({ top: 0 }));
+    againButton.addEventListener("click", () => window.scrollTo({ top: 0 }));
+    prevButton.addEventListener("click", () => scrollToPage(activeIndex - 1));
+    nextButton.addEventListener("click", () => scrollToPage(activeIndex + 1));
+    fitButton.addEventListener("click", () => {
+      document.body.classList.toggle("fit-wide");
+      fitButton.setAttribute("aria-pressed", document.body.classList.contains("fit-wide"));
+    });
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") scrollToPage(activeIndex - 1);
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") scrollToPage(activeIndex + 1);
+      if (event.key === "Home") window.scrollTo({ top: 0 });
+      if (event.key === "End") pages.at(-1).scrollIntoView({ block: "end" });
+    });
+
+    setActive(0);
+    updateProgress();
+  </script>
+</body>
+</html>
